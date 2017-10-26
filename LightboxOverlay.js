@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { Animated, Dimensions, Modal, PanResponder, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Modal, PanResponder, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View, Easing } from 'react-native';
 
 const WINDOW_HEIGHT = Dimensions.get('window').height;
 const WINDOW_WIDTH = Dimensions.get('window').width;
@@ -84,6 +84,7 @@ export default class LightboxOverlay extends Component {
     },
     pan: new Animated.Value(0),
     openVal: new Animated.Value(0),
+    opacityVal: new Animated.Value(1),
     // for scalable
     scale: 1,
     lastScale: 1,
@@ -97,10 +98,10 @@ export default class LightboxOverlay extends Component {
   delay = 300;
   radius = 20;
   prevTouchInfo = {
-		prevTouchX: 0,
-		prevTouchY: 0,
-		prevTouchTimeStamp: 0,
-	};
+    prevTouchX: 0,
+    prevTouchY: 0,
+    prevTouchTimeStamp: 0,
+  };
 
   componentWillMount() {
     this._panResponder = PanResponder.create({
@@ -124,12 +125,12 @@ export default class LightboxOverlay extends Component {
         });
         if ( this.isDoubleTap(currentTouchTimeStamp, gestureState) ) {
           this.doubleTapZoom();
-    		}
+        }
         this.prevTouchInfo = {
-    			prevTouchX: gestureState.x0,
-    			prevTouchY: gestureState.y0,
-    			prevTouchTimeStamp: currentTouchTimeStamp,
-    		};
+          prevTouchX: gestureState.x0,
+          prevTouchY: gestureState.y0,
+          prevTouchTimeStamp: currentTouchTimeStamp,
+        };
         if (gestureState.numberActiveTouches === 2) {
           this.distant = this.distance(evt.nativeEvent.touches[0].pageX, evt.nativeEvent.touches[0].pageY, evt.nativeEvent.touches[1].pageX, evt.nativeEvent.touches[1].pageY);
         }
@@ -195,16 +196,16 @@ export default class LightboxOverlay extends Component {
 
   // calculate distance between presses
   distance(x0, y0, x1, y1) {
-		return Math.sqrt( Math.pow(( x1 - x0 ), 2) + Math.pow(( y1 - y0 ), 2) );
-	}
+    return Math.sqrt( Math.pow(( x1 - x0 ), 2) + Math.pow(( y1 - y0 ), 2) );
+  }
 
   // is double tap or not
   isDoubleTap(currentTouchTimeStamp, {x0, y0}) {
-		const { prevTouchX, prevTouchY, prevTouchTimeStamp } = this.prevTouchInfo;
-		const dt = currentTouchTimeStamp - prevTouchTimeStamp;
+    const { prevTouchX, prevTouchY, prevTouchTimeStamp } = this.prevTouchInfo;
+    const dt = currentTouchTimeStamp - prevTouchTimeStamp;
 
-		return ( dt < this.delay && this.distance(prevTouchX, prevTouchY, x0, y0) < this.radius );
-	}
+    return ( dt < this.delay && this.distance(prevTouchX, prevTouchY, x0, y0) < this.radius );
+  }
 
   doubleTapZoom(){
     if (this.state.scale !== 1) {
@@ -250,6 +251,7 @@ export default class LightboxOverlay extends Component {
       this.setState({ isAnimating: false });
       this.props.didOpen();
     });
+    Animated.timing(this.state.opacityVal, { toValue: 1, duration: 0 }).start();
   }
 
   close = () => {
@@ -271,6 +273,7 @@ export default class LightboxOverlay extends Component {
       // reset dispaly
       this.resetOverlay();
     });
+    Animated.timing(this.state.opacityVal, { toValue: 0, duration: 300, easing: Easing.easeInBack }).start();
   }
 
   componentWillReceiveProps(props) {
@@ -321,6 +324,13 @@ export default class LightboxOverlay extends Component {
       height: openVal.interpolate({inputRange: [0, 1], outputRange: [origin.height, WINDOW_HEIGHT]}),
     }];
 
+    const opacity = {
+      opacity: this.state.opacityVal.interpolate({ 
+        inputRange: [0, 1],
+        outputRange: [0, 1],
+      })
+    };
+
     const background = (<Animated.View style={[styles.background, { backgroundColor: backgroundColor }, lightboxOpacityStyle]}></Animated.View>);
     const header = (<Animated.View style={[styles.header, lightboxOpacityStyle]}>{(renderHeader ?
       renderHeader(this.close) :
@@ -331,7 +341,7 @@ export default class LightboxOverlay extends Component {
       )
     )}</Animated.View>);
     const content = (
-      <Animated.View style={[openStyle, dragStyle, {
+      <Animated.View style={[openStyle, dragStyle, opacity, {
         transform: [
           {scaleX: this.state.scale},
           {scaleY: this.state.scale},

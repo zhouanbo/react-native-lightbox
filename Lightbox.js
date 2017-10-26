@@ -95,7 +95,7 @@ export default class Lightbox extends Component {
           });
         }
         setTimeout(() => {
-          this._root && this.state.layoutOpacity.setValue(0);
+          // this._root && this.state.layoutOpacity.setValue(0);
         });
       });
     });
@@ -106,7 +106,7 @@ export default class Lightbox extends Component {
   }
 
   onClose = () => {
-    this.state.layoutOpacity.setValue(1);
+    // this.state.layoutOpacity.setValue(1);
     this.setState({
       isOpen: false,
     }, this.props.onClose);
