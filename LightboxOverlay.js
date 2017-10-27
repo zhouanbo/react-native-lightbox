@@ -273,7 +273,7 @@ export default class LightboxOverlay extends Component {
       // reset dispaly
       this.resetOverlay();
     });
-    Animated.timing(this.state.opacityVal, { toValue: 0, duration: 300, easing: Easing.easeInBack }).start();
+    Animated.timing(this.state.opacityVal, { toValue: 0, duration: 150, easing: Easing.easeInBack }).start();
   }
 
   componentWillReceiveProps(props) {
