@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Animated, Dimensions, Modal, PanResponder, Platform, StatusBar, StyleSheet, Text, TouchableOpacity, View, Easing } from 'react-native';
 
-const WINDOW_HEIGHT = Dimensions.get('window').height;
-const WINDOW_WIDTH = Dimensions.get('window').width;
 const DRAG_DISMISS_THRESHOLD = 150;
 const STATUS_BAR_OFFSET = (Platform.OS === 'android' ? -25 : 0);
 const isIOS = Platform.OS === 'ios';
@@ -12,9 +10,7 @@ const styles = StyleSheet.create({
   background: {
     position: 'absolute',
     top: 0,
-    left: 0,
-    width: WINDOW_WIDTH,
-    height: WINDOW_HEIGHT,
+    left: 0
   },
   open: {
     position: 'absolute',
@@ -27,7 +23,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    width: WINDOW_WIDTH,
     backgroundColor: 'transparent',
   },
   closeButton: {
@@ -172,7 +167,7 @@ export default class LightboxOverlay extends Component {
               target: {
                 y: gestureState.dy,
                 x: gestureState.dx,
-                opacity: 1 - Math.abs(gestureState.dy / WINDOW_HEIGHT)
+                opacity: 1 - Math.abs(gestureState.dy / Dimensions.get('window').height)
               }
             });
             this.close();
@@ -304,6 +299,9 @@ export default class LightboxOverlay extends Component {
       opacity: openVal.interpolate({inputRange: [0, 1], outputRange: [0, target.opacity]})
     };
 
+    const windowHeight = Dimensions.get('window').height;
+    const windowWidth = Dimensions.get('window').width;
+
     let handlers;
     if(swipeToDismiss || scalable) {
       handlers = this._panResponder.panHandlers;
@@ -314,25 +312,25 @@ export default class LightboxOverlay extends Component {
       dragStyle = {
         top: this.state.pan,
       };
-      lightboxOpacityStyle.opacity = this.state.pan.interpolate({inputRange: [-WINDOW_HEIGHT, 0, WINDOW_HEIGHT], outputRange: [0, 1, 0]});
+      lightboxOpacityStyle.opacity = this.state.pan.interpolate({inputRange: [-windowHeight, 0, windowHeight], outputRange: [0, 1, 0]});
     }
 
     const openStyle = [styles.open, {
       left:   openVal.interpolate({inputRange: [0, 1], outputRange: [origin.x, target.x]}),
       top:    openVal.interpolate({inputRange: [0, 1], outputRange: [origin.y + STATUS_BAR_OFFSET, target.y + STATUS_BAR_OFFSET]}),
-      width:  openVal.interpolate({inputRange: [0, 1], outputRange: [origin.width, WINDOW_WIDTH]}),
-      height: openVal.interpolate({inputRange: [0, 1], outputRange: [origin.height, WINDOW_HEIGHT]}),
+      width:  openVal.interpolate({inputRange: [0, 1], outputRange: [origin.width, windowWidth]}),
+      height: openVal.interpolate({inputRange: [0, 1], outputRange: [origin.height, windowHeight]}),
     }];
 
     const opacity = {
-      opacity: this.state.opacityVal.interpolate({ 
+      opacity: this.state.opacityVal.interpolate({
         inputRange: [0, 1],
         outputRange: [0, 1],
       })
     };
 
-    const background = (<Animated.View style={[styles.background, { backgroundColor: backgroundColor }, lightboxOpacityStyle]}></Animated.View>);
-    const header = (<Animated.View style={[styles.header, lightboxOpacityStyle]}>{(renderHeader ?
+    const background = (<Animated.View style={[styles.background, { backgroundColor: backgroundColor, height: windowHeight, width: windowWidth }, lightboxOpacityStyle]}/>);
+    const header = (<Animated.View style={[styles.header, lightboxOpacityStyle, {width: windowWidth}]}>{(renderHeader ?
       renderHeader(this.close) :
       (
         <TouchableOpacity onPress={this.close}>
