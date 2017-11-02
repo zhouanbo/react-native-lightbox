@@ -167,7 +167,7 @@ export default class LightboxOverlay extends Component {
               target: {
                 y: gestureState.dy,
                 x: gestureState.dx,
-                opacity: 1 - Math.abs(gestureState.dy / Dimensions.get('window').height)
+                opacity: 1 - Math.abs(gestureState.dy / this.state.window.height)
               }
             });
             this.close();
@@ -187,6 +187,24 @@ export default class LightboxOverlay extends Component {
     if(this.props.isOpen) {
       this.open();
     }
+
+    this.setState({
+      ...this.state,
+      window: Dimensions.get('window')
+    });
+
+    Dimensions.addEventListener('change', this.onDimensionChange);
+  }
+
+  onDimensionChange = (event) => {
+    this.setState({
+      ...this.state,
+      window: event.window
+    });
+  };
+
+  componentWillUnmount() {
+    Dimensions.removeEventListener('change', this.onDimensionChange);
   }
 
   // calculate distance between presses
@@ -293,14 +311,12 @@ export default class LightboxOverlay extends Component {
       isAnimating,
       openVal,
       target,
+      window
     } = this.state;
 
     const lightboxOpacityStyle = {
       opacity: openVal.interpolate({inputRange: [0, 1], outputRange: [0, target.opacity]})
     };
-
-    const windowHeight = Dimensions.get('window').height;
-    const windowWidth = Dimensions.get('window').width;
 
     let handlers;
     if(swipeToDismiss || scalable) {
@@ -312,14 +328,14 @@ export default class LightboxOverlay extends Component {
       dragStyle = {
         top: this.state.pan,
       };
-      lightboxOpacityStyle.opacity = this.state.pan.interpolate({inputRange: [-windowHeight, 0, windowHeight], outputRange: [0, 1, 0]});
+      lightboxOpacityStyle.opacity = this.state.pan.interpolate({inputRange: [-window.height, 0, window.height], outputRange: [0, 1, 0]});
     }
 
     const openStyle = [styles.open, {
       left:   openVal.interpolate({inputRange: [0, 1], outputRange: [origin.x, target.x]}),
       top:    openVal.interpolate({inputRange: [0, 1], outputRange: [origin.y + STATUS_BAR_OFFSET, target.y + STATUS_BAR_OFFSET]}),
-      width:  openVal.interpolate({inputRange: [0, 1], outputRange: [origin.width, windowWidth]}),
-      height: openVal.interpolate({inputRange: [0, 1], outputRange: [origin.height, windowHeight]}),
+      width:  openVal.interpolate({inputRange: [0, 1], outputRange: [origin.width, window.width]}),
+      height: openVal.interpolate({inputRange: [0, 1], outputRange: [origin.height, window.height]}),
     }];
 
     const opacity = {
@@ -329,8 +345,8 @@ export default class LightboxOverlay extends Component {
       })
     };
 
-    const background = (<Animated.View style={[styles.background, { backgroundColor: backgroundColor, height: windowHeight, width: windowWidth }, lightboxOpacityStyle]}/>);
-    const header = (<Animated.View style={[styles.header, lightboxOpacityStyle, {width: windowWidth}]}>{(renderHeader ?
+    const background = (<Animated.View style={[styles.background, { backgroundColor: backgroundColor, height: window.height, width: window.width }, lightboxOpacityStyle]}/>);
+    const header = (<Animated.View style={[styles.header, lightboxOpacityStyle, {width: window.width}]}>{(renderHeader ?
       renderHeader(this.close) :
       (
         <TouchableOpacity onPress={this.close}>
