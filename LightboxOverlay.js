@@ -86,7 +86,8 @@ export default class LightboxOverlay extends Component {
     offsetX: 0,
     offsetY: 0,
     lastX: 0,
-    lastY: 0
+    lastY: 0,
+    window: Dimensions.get('window')
   };
 
   distant = 150;
@@ -187,11 +188,6 @@ export default class LightboxOverlay extends Component {
     if(this.props.isOpen) {
       this.open();
     }
-
-    this.setState({
-      ...this.state,
-      window: Dimensions.get('window')
-    });
 
     Dimensions.addEventListener('change', this.onDimensionChange);
   }
