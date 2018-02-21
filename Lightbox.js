@@ -7,6 +7,7 @@ import LightboxOverlay from './LightboxOverlay';
 export default class Lightbox extends Component {
   static propTypes = {
     activeProps:     PropTypes.object,
+    touchableProps:  PropTypes.object,
     renderHeader:    PropTypes.func,
     renderContent:   PropTypes.func,
     underlayColor:   PropTypes.string,
@@ -23,6 +24,7 @@ export default class Lightbox extends Component {
   };
 
   static defaultProps = {
+    touchableProps: {},
     swipeToDismiss: true,
     onOpen: () => {},
     didOpen: () => {},
@@ -127,6 +129,7 @@ export default class Lightbox extends Component {
       >
         <Animated.View style={{opacity: this.state.layoutOpacity}}>
           <TouchableHighlight
+            {...this.props.touchableProps}
             underlayColor={this.props.underlayColor}
             onPress={this.open}
           >
