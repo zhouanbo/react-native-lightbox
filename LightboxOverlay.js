@@ -105,6 +105,9 @@ export default class LightboxOverlay extends Component {
       onStartShouldSetPanResponder: (evt, gestureState) => {
         return !this.state.isAnimating;
       },
+      onStartShouldSetPanResponderCapture: ({ nativeEvent: { touches } }, { vx, vy }) => {
++        return Math.abs(vy) > Math.abs(vx) && !this.state.isAnimating
++      },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
         if (this.state.isAnimating) {
           return false;
@@ -112,7 +115,9 @@ export default class LightboxOverlay extends Component {
           return this.props.scalable && gestureState.dx > 2 || gestureState.dy > 2 || gestureState.numberActiveTouches === 2;
         }
       },
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => !this.state.isAnimating,
+      onMoveShouldSetPanResponderCapture: ({ nativeEvent: { touches } }, { vx, vy }) => {
++        return Math.abs(vy) > Math.abs(vx) && !this.state.isAnimating
++      },
       onPanResponderGrant: (evt, gestureState) => {
         const currentTouchTimeStamp = Date.now();
         this.state.pan.setValue(0);
